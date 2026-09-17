@@ -1,0 +1,23 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <style name="Theme.Spendly" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/purple_primary</item>
+        <item name="colorSecondary">@color/teal_accent</item>
+        <item name="android:statusBarColor" tools:targetApi="21">@color/purple_primary</item>
+    </style>
+
+    <!--
+      Used only by CategorizeActivity. Makes the activity render as a
+      translucent floating overlay (like a dialog) instead of a full
+      opaque screen, so it looks like a bottom-sheet popup on top of
+      whatever app the user was in when the bank notification arrived.
+    -->
+    <style name="Theme.Spendly.CategorizeDialog" parent="Theme.Material3.DayNight.Dialog">
+        <item name="android:windowIsFloating">false</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:backgroundDimEnabled">true</item>
+        <item name="android:windowAnimationStyle">@android:style/Animation.Translucent</item>
+    </style>
+
+</resources>
