@@ -1,10 +1,10 @@
 package com.spendly.app.ui
 
 import android.os.Bundle
+import android.view.ContextThemeWrapper
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.chip.Chip
-import com.google.android.material.R as MaterialR
 import com.spendly.app.data.AppDatabase
 import com.spendly.app.data.Categories
 import com.spendly.app.databinding.ActivityCategorizeBinding
@@ -39,7 +39,11 @@ class CategorizeActivity : AppCompatActivity() {
         }
 
         Categories.ALL.forEach { category ->
-            val chip = Chip(this, null, MaterialR.attr.chipStyle).apply {
+            val chipContext = ContextThemeWrapper(
+                this,
+                com.google.android.material.R.style.Widget_MaterialComponents_Chip_Filter
+            )
+            val chip = Chip(chipContext).apply {
                 text = category
                 isCheckable = true
                 setOnClickListener {
