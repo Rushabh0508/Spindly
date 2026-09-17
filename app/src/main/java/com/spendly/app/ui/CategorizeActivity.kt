@@ -4,17 +4,13 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.chip.Chip
+import com.google.android.material.R as MaterialR
 import com.spendly.app.data.AppDatabase
 import com.spendly.app.data.Categories
 import com.spendly.app.databinding.ActivityCategorizeBinding
 import kotlinx.coroutines.launch
 import java.util.Locale
 
-/**
- * Floating "what did you buy?" card. Launched either by BankNotificationListener
- * the instant a Monzo alert comes in, or manually from MainActivity when the
- * user taps an uncategorised transaction.
- */
 class CategorizeActivity : AppCompatActivity() {
 
     companion object {
@@ -35,6 +31,53 @@ class CategorizeActivity : AppCompatActivity() {
         txId = intent.getLongExtra(EXTRA_TX_ID, -1L)
         val merchant = intent.getStringExtra(EXTRA_MERCHANT) ?: "Unknown"
         val amount = intent.getDoubleExtra(EXTRA_AMOUNT, 0.0)
+
+        binding.sheetAmount.text = String.format(Locale.UK, "£%.2f — %s", amount, merchant)
+
+        // Pre-fill the amount field; leave blank instead of "0.00" so it doesn't
+        // look like a real value the user has to clear first.
+        if (amount != 0.0) {
+            binding.amountInput.setText(String.format(Locale.UK, "%.2f", amount))
+        }
+
+        Categories.ALL.forEach { category ->
+            // IMPORTANT: passing the chipStyle attr avoids a runtime crash that
+            // happens when a Chip is created with no style at all.
+            val chip = Chip(this, null, MaterialR.attr.chipStyle).apply {
+                text = category
+                isCheckable = true
+                setOnClickListener {
+                    selectedCategory = category
+                    binding.saveBtn.isEnabled = true
+                }
+            }
+            binding.chipGroup.addView(chip)
+        }
+
+        binding.saveBtn.isEnabled = false
+        binding.saveBtn.setOnClickListener { save() }
+        binding.dismissArea.setOnClickListener { finish() }
+    }
+
+    private fun save() {
+        val category = selectedCategory ?: return
+        val note = binding.noteInput.text?.toString()?.trim().orEmpty()
+
+        val amountText = binding.amountInput.text?.toString()?.trim().orEmpty()
+        val amount = amountText.toDoubleOrNull()
+        if (amount == null || amount <= 0.0) {
+            binding.amountInput.error = "Enter a valid amount"
+            return
+        }
+
+        lifecycleScope.launch {
+            val dao = AppDatabase.getInstance(applicationContext).transactionDao()
+            val existing = dao.getById(txId) ?: return@launch
+            dao.update(existing.copy(amount = amount, category = category, note = note.ifBlank { null }))
+            finish()
+        }
+    }
+}        val amount = intent.getDoubleExtra(EXTRA_AMOUNT, 0.0)
 
         binding.sheetAmount.text = String.format(Locale.UK, "£%.2f — %s", amount, merchant)
 
